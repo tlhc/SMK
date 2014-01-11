@@ -1003,8 +1003,6 @@ class Guake(SimpleGladeApp):
             return
         page = self.notebook.page_num(box)
         #self.tabs.get_children()[page].set_label(vte.get_window_title())
-        # modify the terminal title to short title
-        #by tlhc
         _title = vte.get_window_title();
         _string = _title.split(':')
         if _string[1] == "~":
@@ -1234,6 +1232,9 @@ class Guake(SimpleGladeApp):
                     lambda *x: self.notebook.set_current_page(
                         self.notebook.page_num(box)
                     ))
+        #bnt.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.Color("#CEE0A6"))
+        #bnt.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.Color("#088A08"))
+        bnt.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.Color("#01DF01"))
         bnt.show()
 
         self.tabs.pack_start(bnt, expand=False, padding=1)

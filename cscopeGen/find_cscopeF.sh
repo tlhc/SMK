@@ -19,6 +19,8 @@
 
 set -o nounset                              # Treat unset variables as an error
 
+pwd
+
 rm ./cscope.files
 if [ $? -eq 0 ] ; then
     echo "rm success"
