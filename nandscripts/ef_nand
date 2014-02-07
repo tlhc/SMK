@@ -1,0 +1,43 @@
+#!/bin/bash - 
+#===============================================================================
+#
+#          FILE: ef_nand.sh
+# 
+#         USAGE: ./ef_nand.sh 
+# 
+#   DESCRIPTION: 
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: tongl (), 
+#  ORGANIZATION: 
+#       CREATED: 2014年01月16日 13时05分56秒 CST
+#      REVISION:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+
+if [ "$1" = "n" ] || [ "$1" = "o" ] ; then
+    port=`ls /dev | grep USB | awk -F "USB" '{print $2}'`
+
+    if [ $port -eq 0 ] || [ $port -eq 1 ] ; then
+        erase_nand $port $1
+        sleep 1
+        flash_nand $port $1
+        echo "------------------------------>>>SSSSSUUUUCCCCEEESSSS!!!!!"
+    else
+        echo "no para"
+    fi
+
+else
+    echo "you must sel the val o or n"
+fi
+
+
+
+
+
+

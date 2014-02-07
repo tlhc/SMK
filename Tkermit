@@ -1,0 +1,29 @@
+#!/bin/bash - 
+#===============================================================================
+#
+#          FILE: Tkermit.sh
+# 
+#         USAGE: ./Tkermit.sh 
+# 
+#   DESCRIPTION: 
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: tongl (), 
+#  ORGANIZATION: 
+#       CREATED: 2014年01月16日 13时18分30秒 CST
+#      REVISION:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+
+port=`ls /dev | grep USB | awk -F "USB" '{print $2}'`
+
+file="/home/mars/.kermrc"
+#sed -n '/USB/' -p $file
+sed -i "s/USB[0-9]/USB$port/" $file
+
+echo "update usb success"

@@ -1,0 +1,33 @@
+#!/bin/bash - 
+#===============================================================================
+#
+#          FILE: flash_nand.sh
+# 
+#         USAGE: ./flash_nand.sh 
+# 
+#   DESCRIPTION: 
+# 
+#       OPTIONS: ---
+#  REQUIREMENTS: ---
+#          BUGS: ---
+#         NOTES: ---
+#        AUTHOR: tongl (), 
+#  ORGANIZATION: 
+#       CREATED: 2014年01月16日 13时00分55秒 CST
+#      REVISION:  ---
+#===============================================================================
+
+set -o nounset                              # Treat unset variables as an error
+
+
+
+if [ $1 -eq 0 ] || [ $1 -eq 1 ] ; then
+    if [ "$2" = "n" ] ; then
+        sudo ~/low_work/APPRO/dm36x/sfh_DM36x.exe -nandflash ~/low_work/DaVinci-PSP-SDK-03.21.00.04/images/boot-strap/serial_flash/dm36x/ubl_DM36x_ARM432_DDR340_OSC24_NAND.bin ~/ACHIVE/u-boot.bin -p /dev/ttyUSB$1
+    else if [ "$2" = "o" ] ; then 
+        sudo ~/low_work/APPRO/dm36x/sfh_DM36x.exe -nandflash ~/low_work/DaVinci-PSP-SDK-03.21.00.04/images/boot-strap/serial_flash/dm36x/ubl_DM36x_ARM432_DDR340_OSC24_NAND.bin ~/low_work/DaVinci-PSP-SDK-03.21.00.04/images/u-boot/dm36x/u-boot.bin -p /dev/ttyUSB$1
+        fi
+    fi
+else 
+    echo "no para"
+fi
