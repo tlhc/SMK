@@ -1,12 +1,9 @@
-
 "the trans function by TL
-function! TransL(word)
+function! <SID>TransL(word)
 python << EOF
 
 #coding=utf-8
 import vim, urllib2, sys
-
-
 def tras(word):
     s="trans-container"
     err="error-wrapper"
@@ -45,17 +42,18 @@ tras(word)
 EOF
 endfunction
 
-function! GetWD() 
+function! <SID>GetWD() 
    let s:word = expand('<cword>')
-   call TransL(s:word)
+   call <SID>TransL(s:word)
 endfunction
 
-function! GetVWD()
-    let s:word = GetVisualSelection()
-    call TransL(s:word)
+function! <SID>GetVWD()
+    let s:word = <SID>GetVisualSelection()
+    call <SID>TransL(s:word)
 endfunction
 
-function! GetVisualSelection()
+
+function! <SID>GetVisualSelection()
     try
         let a_save = @a
         normal! gv"ay
@@ -65,5 +63,7 @@ function! GetVisualSelection()
     endtry
 endfunction
 
-nmap <silent> <c-s-K> <Esc>: call GetWD() <CR>
-vmap <silent> <c-s-K> <Esc>: call GetVWD()<CR>
+command GetWD :call <SID>GetWD()
+command GetVWD :call <SID>GetVWD()
+"nmap <silent> <c-s-K> <Esc>: call GetWD() <CR>
+"vmap <silent> <c-s-K> <Esc>: call GetVWD()<CR>
