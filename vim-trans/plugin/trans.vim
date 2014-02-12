@@ -19,7 +19,7 @@ def tras(word):
         print "can't find "
         return
     else:
-        print "translate....."
+        print word + ":"
 
     pos = d.find(s.decode("utf-8").encode("utf-8"))
     ret = d[pos:pos + 5000]
