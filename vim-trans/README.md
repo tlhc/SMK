@@ -23,8 +23,10 @@
 
 ------
 
-**how to use:**
-put this in your vimrc file
+**how to use:**   
+
+put this in your vimrc file   
+
 `nmap <silent> <c-s-K> <Esc>: GetWD<CR>`   
 
 `vmap <silent> <c-s-K> <Esc>: GetVWD<CR>`   
