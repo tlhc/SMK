@@ -1,3 +1,4 @@
+
 "the trans function by TL
 function! TransL(word)
 python << EOF
@@ -45,9 +46,25 @@ EOF
 endfunction
 
 function! GetWD() 
-    let s:word = expand('<cword>')
+   let s:word = expand('<cword>')
+   call TransL(s:word)
+endfunction
+
+function! GetVWD()
+    let s:word = GetVisualSelection()
     call TransL(s:word)
 endfunction
 
+function! GetVisualSelection()
+    try
+        let a_save = @a
+        normal! gv"ay
+        return @a
+    finally
+        let @a = a_save
+    endtry
+endfunction
+
 nmap <C-T> : call GetWD() <CR>
+noremap <silent> <C-T> <Esc>: call GetVWD()<CR>
 
