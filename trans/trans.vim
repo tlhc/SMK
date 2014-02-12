@@ -65,6 +65,5 @@ function! GetVisualSelection()
     endtry
 endfunction
 
-nmap <C-T> : call GetWD() <CR>
-noremap <silent> <C-T> <Esc>: call GetVWD()<CR>
-
+nmap <silent> <c-s-K> <Esc>: call GetWD() <CR>
+vmap <silent> <c-s-K> <Esc>: call GetVWD()<CR>
