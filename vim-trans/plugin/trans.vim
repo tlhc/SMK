@@ -10,8 +10,12 @@ def tras(word):
 
     request="http://dict.youdao.com/search?q=" + word + "&keyfrom=dict.index"
 
-    url = urllib2.urlopen(request)
-    d = url.read()
+    try:
+        url = urllib2.urlopen(request, None, 2)
+        d = url.read()
+    except:
+        print "req time out"
+        return
 
     epos = d.find(err.decode("utf-8").encode("utf-8"))
 
