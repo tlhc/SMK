@@ -24,21 +24,21 @@
 #include <vector>
 #define UNUSED(x) (void)(x)
 
-std::string &ltrim(std::string &s) {
+inline std::string &ltrim(std::string &s) {
     s.erase(s.begin(), 
             std::find_if(s.begin(), s.end(), 
                 std::not1(std::ptr_fun<int, int>(std::isspace))));
     return s;
 }
 
-std::string &rtrim(std::string &s) {
+inline std::string &rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), 
                 s.rend(), 
                 std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
     return s;
 }
 
-std::string &trim(std::string &s) {
+inline std::string &trim(std::string &s) {
     return ltrim(rtrim(s));
 }
 
@@ -55,8 +55,15 @@ bool cmpf(std::string e1, std::string e2) {
     cmpstr2 = trim(cmpstr2);
     //std::cout << cmpstr1 << std::endl;
     //std::cout << cmpstr2 << std::endl;
-    if(std::atof(cmpstr1.c_str()) <= std::atof(cmpstr2.c_str()))
+    if(cmpstr1.empty()) {
+        return false;
+    }
+    if(cmpstr2.empty()) {
         return true;
+    }
+    if(std::atof(cmpstr1.c_str()) <= std::atof(cmpstr2.c_str())) {
+        return true;
+    }
     return false;
 }
 
