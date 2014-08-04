@@ -11,7 +11,7 @@
 # LocalInterface <IP>
 # 设置在本地开启的界面，可以是本地回环地址 (127.0.0.1) ，本地局域网，以及互联网 (since 2.2)
 # 如果是 IPv6 地址，请在地址两端加上方括号，例如 [::1] (本地回环)、[fe80::699c:f79a:9bb6:1] (since 2.3)
-LocalInterface 127.0.0.1
+LocalInterface 127.0.0.128
 
 # LocalPort <NUM>
 # 本地开启的端口 (since 2.2)
@@ -85,7 +85,7 @@ AllowFallBack false
 # TimeToServer <NUM>
 # 与服务器的超时时间，毫秒 (since 2.2)
 # 一般 DNS 响应都在 200 毫秒以内
-TimeToServer 700
+TimeToServer 250
 
 # ParallelQuery <BOOLEAN>
 # 是否启用 UDP 并发查询 (since 2.6 b1)
@@ -106,7 +106,8 @@ UDPAntiPollution true
 # 阻挡含有以下 IP 地址（只支持 IPv4 地址）的 UDP DNS 数据包 (since 2.6 b1)
 # 以下列表中已经含有部分伪造的 IP 地址，可以执行 `dnsforwarder -P' 来获取更多伪造的 IP 地址
 # 如果 `UDPAntiPollution' 为 `false'，此选项无效
-UDPBlock_IP 243.185.187.39,46.82.174.68,37.61.54.158,93.46.8.89,59.24.3.173,203.98.7.65,8.7.198.45,78.16.49.15,159.106.121.75
+UDPBlock_IP 243.185.187.39,46.82.174.68,37.61.54.158,93.46.8.89,59.24.3.173,203.98.7.65,8.7.198.45,78.16.49.15,159.106.121.75, 128.121.126.139, 159.106.121.75, 169.132.13.103, 192.67.198.6, 202.106.1.2, 202.181.7.85, 203.161.230.171, 203.98.7.65, 207.12.88.98, 208.56.31.43, 209.145.54.50, 209.220.30.174, 209.36.73.33, 209.85.229.138, 211.94.66.147, 213.169.251.35, 216.221.188.182, 216.234.179.13, 243.185.187.39, 37.61.54.158, 4.36.66.178, 46.82.174.68, 59.24.3.173, 64.33.88.161, 64.33.99.47, 64.66.163.251, 65.104.202.252, 65.160.219.113, 66.45.252.237, 72.14.205.104, 72.14.205.99, 74.125.127.102, 74.125.155.102, 74.125.39.102, 74.125.39.113, 78.16.49.15, 8.7.198.45, 93.46.8.89
+
 
 #########################
 # 排除列表
@@ -124,7 +125,7 @@ ExcludedDomain
 # 加载 GFW List (since 2.2.3)
 # GFW List 中的域名将被添加到排除列表
 # 如果保留为空，则不载入 GFW List
-#GfwList https://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt
+GfwList https://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt
 
 # GfwListBase64Decode <BOOLEAN>
 # GFW List 是否需要 Base64 解码
@@ -140,7 +141,7 @@ GfwListUpdateInterval 7200
 # GfwListRetryInterval <NUM>
 # 当下载 GFW List 失败后的重试时间，秒 (since 2.2.4)
 # 如果保留为空，则使用默认值 (30)
-GfwListRetryInterval 30
+GfwListRetryInterval 2
 
 # GfwListDownloadPath <STRING>
 # GFW List 下载到本地文件的路径 (since 2.3)
