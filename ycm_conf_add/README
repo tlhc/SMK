@@ -1,1 +1,11 @@
 automatic extend .ycm_extra_conf.py by project
+usage:
+    1.sudo cp ./ycmadd.py to /usr/local/sbin/
+    2.sudo chmod a+rwx /usr/local/sbin/ycmadd.py
+
+    $ cd project_path
+    $ ycmadd.py
+
+    now you will have a .ycm_extra_conf for your project which include project
+    src dir
+
