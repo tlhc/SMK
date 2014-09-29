@@ -131,7 +131,6 @@ def main():
     except (HTMLParseError, Exception) as ex:
         logger.error(ex)
 
-
     print onceval
     fileh = open('html.html', 'w')
     fileh.close()
