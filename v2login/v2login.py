@@ -7,8 +7,10 @@ import os
 import logging
 import ConfigParser
 import urllib2
+import cookielib
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
+import requests
 
 
 def usage():
@@ -95,6 +97,8 @@ def main():
     key_user = 'username'
     key_pass = 'password'
     onceval = ''
+    cookies = ''
+    opener = ''
     try:
         optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ['help', 'config='])
         for opt, arg in optlist:
@@ -114,10 +118,17 @@ def main():
         return
 
     try:
+        cj = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+        urllib2.install_opener(opener)
+
         url = 'http://v2ex.com/signin'
         req = urllib2.Request(url)
         response = urllib2.urlopen(req)
         req_con = response.read()
+
+        cs = ['%s = %s' % (c.name, c.value) for c in cj]
+        cookies = ';'.join(cs)
     except (urllib2.URLError, urllib2.HTTPError) as ex:
         logger.error(ex)
 
@@ -132,6 +143,8 @@ def main():
         logger.error(ex)
 
     print onceval
+    print cookies
+
     fileh = open('html.html', 'w')
     fileh.close()
     fileh = open('html.html', 'r+')
