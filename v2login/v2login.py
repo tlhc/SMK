@@ -167,6 +167,7 @@ def main():
         print gziped
         if gziped:
             req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
+            logger.debug('gziped decompress')
 
         # for test
         # print req_con
