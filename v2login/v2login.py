@@ -6,11 +6,11 @@ import sys
 import os
 import logging
 import ConfigParser
+import urllib
 import urllib2
 import cookielib
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
-import requests
 
 
 def usage():
@@ -117,18 +117,23 @@ def main():
         logger.error('password not exists')
         return
 
+    # cj = ''
+    # opener = ''
+    url = 'http://v2ex.com/signin'
+    req_con = ''
+
     try:
         cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
         urllib2.install_opener(opener)
-
-        url = 'http://v2ex.com/signin'
         req = urllib2.Request(url)
+        req.add_header('User-Agent',
+                       'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
         response = urllib2.urlopen(req)
         req_con = response.read()
 
-        cs = ['%s = %s' % (c.name, c.value) for c in cj]
-        cookies = ';'.join(cs)
+        # cs = ['%s = %s' % (c.name, c.value) for c in cj]
+        # cookies = ';'.join(cs)
     except (urllib2.URLError, urllib2.HTTPError) as ex:
         logger.error(ex)
 
@@ -142,14 +147,41 @@ def main():
     except (HTMLParseError, Exception) as ex:
         logger.error(ex)
 
-    print onceval
-    print cookies
+    # print onceval
+    # print cookies
 
-    fileh = open('html.html', 'w')
-    fileh.close()
-    fileh = open('html.html', 'r+')
-    fileh.write(req_con)
-    fileh.close()
+
+    try:
+        postdata = {}
+        postdata['u'] = cfg[key_user]
+        postdata['p'] = cfg[key_pass]
+        postdata['once'] = onceval
+        postdata['next'] = ' '
+        poststr = urllib.urlencode(postdata)
+        print poststr
+        reqlogin = urllib2.Request(url, poststr)
+
+        reqlogin.add_header('User-Agent',
+                        'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
+
+        reqlogin.add_header('Content-Type', 'application/x-www-form-urlencoded')
+        reqlogin.add_header('Referer', 'http://v2ex.com/signin')
+        reqlogin.add_header('Accept-Encoding', 'gzip,deflate')
+
+        resp_login = urllib2.urlopen(reqlogin)
+        req_con = resp_login.read()
+        print req_con
+    except urllib2.HTTPError as ex:
+        logger.error(ex)
+
+    try:
+        fileh = open('html.html', 'w')
+        fileh.close()
+        fileh = open('html.html', 'r+')
+        fileh.write(req_con)
+        fileh.close()
+    except IOError as ex:
+        logger.error(ex)
 
 if __name__ == '__main__':
     main()
