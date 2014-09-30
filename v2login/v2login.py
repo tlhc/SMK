@@ -83,9 +83,32 @@ class V2HTMLParser(HTMLParser):
     # def handle_data(self, data):
     #    print 'data', data
 
+class V2HTMLParserX(HTMLParser):
+    """ HTMLParser for get coins """
+    def __init__(self):
+        self.finlink = ''
+        HTMLParser.__init__(self)
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'input':
+            print attrs
+    def handle_endtag(self, tag):
+        pass
+
 
 def main():
     """ login to v2ex and get the coins """
+
+    # for test
+    fstatic = open('./tst.html', 'r')
+    cont = fstatic.read()
+    parser = V2HTMLParserX()
+    parser.feed(cont)
+    parser.close()
+    return
+
+
+
 
     logger.info('init config file parse')
     cfg = {}
@@ -164,10 +187,33 @@ def main():
         resp_login = urllib2.urlopen(reqlogin)
         req_con = resp_login.read()
         gziped = resp_login.headers.get('Content-Encoding')
-        print gziped
+        # print gziped
         if gziped:
             req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
             logger.debug('gziped decompress')
+
+        gettag = '/mission/daily'
+        siteurl = 'http://v2ex.com'
+        if gettag in req_con:
+            siteurl = siteurl + gettag
+            try:
+                req_get = urllib2.Request(siteurl)
+                req_get.add_header('User-Agent',
+                                    'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
+
+                req_get.add_header('Content-Type', 'application/x-www-form-urlencoded')
+                req_get.add_header('Referer', 'http://v2ex.com')
+                req_get.add_header('Accept-Encoding', 'gzip,deflate')
+                resp = urllib2.urlopen(req_get)
+                gziped = resp.headers.get('Content-Encoding')
+                if gziped:
+                    req_con = zlib.decompress(resp.read(), 16 + zlib.MAX_WBITS)
+                    parser = V2HTMLParserX()
+                    parser.feed(req_con)
+                    parser.close()
+
+            except urllib2.HTTPError as ex:
+                logger.error(ex)
 
         # for test
         # print req_con
