@@ -9,22 +9,19 @@ import ConfigParser
 import urllib
 import urllib2
 import cookielib
+import zlib
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
 
 
 def usage():
-    """
-    usage for this script
-    """
+    """ usage for this script """
 
     print 'usage: v2login.py -c /path/to/config_file'
     return
 
 def loggerinit():
-    """
-    init logger
-    """
+    """ init logger """
 
     fomatter = logging.Formatter('%(asctime)s %(levelname)-8s %(funcName)s %(lineno)s %(message)s')
     _logger = logging.getLogger('v2loger')
@@ -41,9 +38,7 @@ def loggerinit():
 logger = loggerinit()
 
 def parsecfg(filename):
-    """
-    parse config file and return config
-    """
+    """ parse config file and return config """
     cfg = {}
     if filename is '':
         logger.critical('filename is empty')
@@ -67,6 +62,7 @@ def parsecfg(filename):
 
 
 class V2HTMLParser(HTMLParser):
+    """ html parser """
     def __init__(self):
         self.onceval = ''
         HTMLParser.__init__(self)
@@ -89,16 +85,14 @@ class V2HTMLParser(HTMLParser):
 
 
 def main():
-    """
-    login to v2ex and get the coins
-    """
+    """ login to v2ex and get the coins """
+
     logger.info('init config file parse')
     cfg = {}
     key_user = 'username'
     key_pass = 'password'
     onceval = ''
-    cookies = ''
-    opener = ''
+
     try:
         optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ['help', 'config='])
         for opt, arg in optlist:
@@ -120,7 +114,6 @@ def main():
     # cj = ''
     # opener = ''
     url = 'http://v2ex.com/signin'
-    req_con = ''
 
     try:
         cj = cookielib.CookieJar()
@@ -158,11 +151,11 @@ def main():
         postdata['once'] = onceval
         postdata['next'] = '/'
         poststr = urllib.urlencode(postdata)
-        print poststr
+        # print poststr
         reqlogin = urllib2.Request(url, poststr)
 
         reqlogin.add_header('User-Agent',
-                        'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
+                            'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
 
         reqlogin.add_header('Content-Type', 'application/x-www-form-urlencoded')
         reqlogin.add_header('Referer', 'http://v2ex.com/signin')
@@ -170,18 +163,28 @@ def main():
 
         resp_login = urllib2.urlopen(reqlogin)
         req_con = resp_login.read()
-        print req_con
+        gziped = resp_login.headers.get('Content-Encoding')
+        print gziped
+        if gziped:
+            req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
+
+        # for test
+        # print req_con
+        try:
+            fileh = open('html.html', 'w')
+            fileh.close()
+            fileh = open('html.html', 'r+')
+            fileh.write(req_con)
+            fileh.close()
+        except IOError as ex:
+            logger.error(ex)
+
     except urllib2.HTTPError as ex:
         logger.error(ex)
+        if ex.code == 403:
+            # send mail
+            pass
 
-    try:
-        fileh = open('html.html', 'w')
-        fileh.close()
-        fileh = open('html.html', 'r+')
-        fileh.write(req_con)
-        fileh.close()
-    except IOError as ex:
-        logger.error(ex)
 
 if __name__ == '__main__':
     main()
