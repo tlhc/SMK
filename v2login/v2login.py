@@ -156,7 +156,7 @@ def main():
         postdata['u'] = cfg[key_user]
         postdata['p'] = cfg[key_pass]
         postdata['once'] = onceval
-        postdata['next'] = ' '
+        postdata['next'] = '/'
         poststr = urllib.urlencode(postdata)
         print poststr
         reqlogin = urllib2.Request(url, poststr)
