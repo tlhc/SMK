@@ -155,6 +155,47 @@ class V2HTMLParserB(HTMLParser):
             self.flags = 0
 
 
+class Request(object):
+    """ urllib2 Request """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux i686) '
+                      'AppleWebKit/537.36 (KHTML, like Gecko) '
+                      'Chrome/37.0.2062.120 Safari/537.36',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept-Encoding': 'gzip,deflate',
+    }
+
+    def __init__(self):
+        cookiejar = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+        urllib2.install_opener(opener)
+
+    def get(self, url, refer):
+        """ get """
+        req_get = urllib2.Request(url, None, self.headers)
+        req_get.add_header('Referer', refer)
+        resp = urllib2.urlopen(req_get)
+        gziped = resp.headers.get('Content-Encoding')
+        req_con = resp.read()
+        if gziped:
+            req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
+            APPLOGGER.debug('gziped decompress')
+        return req_con
+
+    def post(self, url, refer, poststr):
+        """ post """
+        req_post = urllib2.Request(url, poststr, self.headers)
+        req_post.add_header('Referer', refer)
+        resp = urllib2.urlopen(req_post)
+        gziped = resp.headers.get('Content-Encoding')
+        req_con = resp.read()
+        # print gziped
+        if gziped:
+            req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
+            APPLOGGER.debug('gziped decompress')
+        return req_con
+
+
 def main():
     """ login to v2ex and get the coins """
     APPLOGGER.info('init config file parse')
