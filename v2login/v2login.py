@@ -20,10 +20,12 @@ def usage():
     print 'usage: v2login.py -c /path/to/config_file'
     return
 
+
 def loggerinit():
     """ init logger """
 
-    fomatter = logging.Formatter('%(asctime)s %(levelname)-8s %(funcName)s %(lineno)s %(message)s')
+    fstr = '%(asctime)s %(levelname)-8s %(funcName)s %(lineno)s %(message)s'
+    fomatter = logging.Formatter(fstr)
     _logger = logging.getLogger('v2loger')
     _logger.setLevel(logging.DEBUG)
     shandler = logging.StreamHandler()
@@ -37,6 +39,7 @@ def loggerinit():
 
 logger = loggerinit()
 
+
 def parsecfg(filename):
     """ parse config file and return config """
     cfg = {}
@@ -46,18 +49,20 @@ def parsecfg(filename):
     if not os.path.isfile(filename):
         logger.critical('file invalid')
         return
-    with open(filename, 'r') as fp:
+    with open(filename, 'r') as fhandler:
         try:
             config = ConfigParser.ConfigParser()
-            config.readfp(fp)
+            config.readfp(fhandler)
             username = config.get('v2', 'username')
             password = config.get('v2', 'password')
             if username is not '' and password is not '':
                 cfg['username'] = username
                 cfg['password'] = password
         except ConfigParser.Error as ex:
+            fhandler.close()
             logger.error(ex)
 
+    fhandler.close()
     return cfg
 
 
@@ -81,6 +86,7 @@ class V2HTMLParser(HTMLParser):
         if tag == 'input':
             pass
 
+
 class V2HTMLParserX(HTMLParser):
     """ HTMLParser for get coins """
     def __init__(self):
@@ -90,54 +96,56 @@ class V2HTMLParserX(HTMLParser):
     def handle_starttag(self, tag, attrs):
         gettag = '/mission/daily'
         if tag == 'input':
-            #print attrs
-            for key, val in attrs:
+            # print attrs
+            for _, val in attrs:
                 if gettag in val:
                     spos = val.index(gettag)
                     epos = val.index(';')
                     if epos > spos:
-                        self.finlink = val[spos : epos].strip("'")
+                        self.finlink = val[spos:epos].strip("'")
+
     def handle_endtag(self, tag):
         pass
+
 
 class V2HTMLParserB(HTMLParser):
     """ HTMLParser for get balance"""
     def __init__(self):
-        self.flagB = 0
-        self.flagS = 0
-        self.PB = 0
-        self.PS = 0
+        self.flagb = 0
+        self.flags = 0
+        self.bons = 0
+        self.silver = 0
         HTMLParser.__init__(self)
 
     def handle_starttag(self, tag, attrs):
         if tag == 'img':
-            for key, val in attrs:
+            for _, val in attrs:
                 if 'silver' in val:
-                    self.flagB = 1
+                    self.flagb = 1
 
         if tag == 'a':
-            for key, val in attrs:
+            for _, val in attrs:
                 if 'balance_area' in val:
-                    self.flagS = 1
+                    self.flags = 1
 
     def handle_endtag(self, tag):
         pass
+
     def handle_data(self, data):
 
-        if self.flagB == 1:
+        if self.flagb == 1:
             # print data.strip()
-            self.PB = data.strip()
-            self.flagB = 0
+            self.bons = data.strip()
+            self.flagb = 0
 
-        if self.flagS == 1:
+        if self.flags == 1:
             # print data.strip()
-            self.PS = data.strip()
-            self.flagS = 0
+            self.silver = data.strip()
+            self.flags = 0
 
 
 def main():
     """ login to v2ex and get the coins """
-
     logger.info('init config file parse')
     cfg = {}
     key_user = 'username'
@@ -284,7 +292,7 @@ def main():
             parserb = V2HTMLParserB()
             parserb.feed(req_con)
             parserb.close()
-            coins = int(parserb.PS) * 100 + int(parserb.PB)
+            coins = int(parserb.silver) * 100 + int(parserb.bons)
             logger.info('Balance is ' + str(coins) + ' coins')
 
         # for test
