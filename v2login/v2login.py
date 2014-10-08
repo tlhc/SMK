@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- utf-8 -*-
+""" v2login """
 
 import getopt
 import sys
@@ -37,17 +38,27 @@ def loggerinit():
     return _logger
 
 
-logger = loggerinit()
+APPLOGGER = loggerinit()
+
+
+class AppException(Exception):
+    """ AppException """
+    def __init__(self, value):
+        self.value = value
+        Exception.__init__(self)
+
+    def __str__(self):
+        return self.repr(self.value)
 
 
 def parsecfg(filename):
     """ parse config file and return config """
     cfg = {}
     if filename is '':
-        logger.critical('filename is empty')
+        APPLOGGER.critical('filename is empty')
         return
     if not os.path.isfile(filename):
-        logger.critical('file invalid')
+        APPLOGGER.critical('file invalid')
         return
     with open(filename, 'r') as fhandler:
         try:
@@ -60,7 +71,7 @@ def parsecfg(filename):
                 cfg['password'] = password
         except ConfigParser.Error as ex:
             fhandler.close()
-            logger.error(ex)
+            APPLOGGER.error(ex)
 
     fhandler.close()
     return cfg
@@ -146,14 +157,14 @@ class V2HTMLParserB(HTMLParser):
 
 def main():
     """ login to v2ex and get the coins """
-    logger.info('init config file parse')
+    APPLOGGER.info('init config file parse')
     cfg = {}
     key_user = 'username'
     key_pass = 'password'
     onceval = ''
 
     try:
-        optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ['help', 'config='])
+        optlist, _ = getopt.getopt(sys.argv[1:], 'hc:', ['help', 'config='])
         for opt, arg in optlist:
             if opt == '-c':
                 cfg = parsecfg(arg)
@@ -161,33 +172,33 @@ def main():
                 usage()
                 return
     except getopt.GetoptError as ex:
-        logger.error(ex)
+        APPLOGGER.error(ex)
 
     if key_user not in cfg.keys():
-        logger.error('username not exists')
+        APPLOGGER.error('username not exists')
         return
     if key_pass not in cfg.keys():
-        logger.error('password not exists')
+        APPLOGGER.error('password not exists')
         return
 
-    # cj = ''
-    # opener = ''
     url = 'http://v2ex.com/signin'
 
     try:
-        cj = cookielib.CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+        cookiejar = cookielib.CookieJar()
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
         urllib2.install_opener(opener)
         req = urllib2.Request(url)
         req.add_header('User-Agent',
-                       'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
+                       'Mozilla/5.0 (X11; Linux i686) '
+                       'AppleWebKit/537.36 (KHTML, like Gecko) '
+                       'Chrome/37.0.2062.120 Safari/537.36')
         response = urllib2.urlopen(req)
         req_con = response.read()
 
         # cs = ['%s = %s' % (c.name, c.value) for c in cj]
         # cookies = ';'.join(cs)
     except (urllib2.URLError, urllib2.HTTPError) as ex:
-        logger.error(ex)
+        APPLOGGER.error(ex)
 
     try:
         parser = V2HTMLParser()
@@ -195,13 +206,9 @@ def main():
         onceval = parser.onceval
         parser.close()
         if onceval is '':
-            raise Exception('onceval is empty')
-    except (HTMLParseError, Exception) as ex:
-        logger.error(ex)
-
-    # print onceval
-    # print cookies
-
+            raise AppException('onceval is empty')
+    except (HTMLParseError, AppException) as ex:
+        APPLOGGER.error(ex)
 
     try:
         postdata = {}
@@ -214,7 +221,9 @@ def main():
         reqlogin = urllib2.Request(url, poststr)
 
         reqlogin.add_header('User-Agent',
-                            'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
+                            'Mozilla/5.0 (X11; Linux i686) '
+                            'AppleWebKit/537.36 (KHTML, like Gecko) '
+                            'Chrome/37.0.2062.120 Safari/537.36')
 
         reqlogin.add_header('Content-Type', 'application/x-www-form-urlencoded')
         reqlogin.add_header('Referer', 'http://v2ex.com/signin')
@@ -226,7 +235,7 @@ def main():
         # print gziped
         if gziped:
             req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
-            logger.debug('gziped decompress')
+            APPLOGGER.debug('gziped decompress')
 
         gettag = '/mission/daily'
         siteurl = 'http://v2ex.com'
@@ -235,8 +244,11 @@ def main():
             try:
                 req_get = urllib2.Request(_siteurl)
                 req_get.add_header('User-Agent',
-                                   'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
-                req_get.add_header('Content-Type', 'application/x-www-form-urlencoded')
+                                   'Mozilla/5.0 (X11; Linux i686) '
+                                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                                   'Chrome/37.0.2062.120 Safari/537.36')
+                req_get.add_header('Content-Type',
+                                   'application/x-www-form-urlencoded')
                 req_get.add_header('Referer', 'http://v2ex.com')
                 req_get.add_header('Accept-Encoding', 'gzip,deflate')
                 resp = urllib2.urlopen(req_get)
@@ -255,32 +267,40 @@ def main():
 
                         req_get = urllib2.Request(finlink)
                         req_get.add_header('User-Agent',
-                                           'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
-                        req_get.add_header('Content-Type', 'application/x-www-form-urlencoded')
+                                           'Mozilla/5.0 (X11; Linux i686) '
+                                           'AppleWebKit/537.36 '
+                                           '(KHTML, like Gecko) '
+                                           'Chrome/37.0.2062.120 Safari/537.36')
+                        req_get.add_header('Content-Type',
+                                           'application/x-www-form-urlencoded')
                         req_get.add_header('Referer', 'http://v2ex.com')
                         req_get.add_header('Accept-Encoding', 'gzip,deflate')
                         resp = urllib2.urlopen(req_get)
                         gziped = resp.headers.get('Content-Encoding')
                         req_con = resp.read()
                         if gziped:
-                            req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
-
+                            req_con = zlib.decompress(req_con,
+                                                      16 + zlib.MAX_WBITS)
                         print req_con
                     except (urllib2.HTTPError) as ex:
-                            logger.error(ex)
-                else:
-                    raise Exception('finlink is empty')
+                        APPLOGGER.error(ex)
 
-            except (urllib2.HTTPError, Exception) as ex:
-                logger.error(ex)
+                else:
+                    raise AppException('finlink is empty')
+
+            except (urllib2.HTTPError, AppException) as ex:
+                APPLOGGER.error(ex)
         else:
-            logger.info('already get coins')
+            APPLOGGER.info('already get coins')
             siteurl = 'http://v2ex.com/balance'
 
             req_get = urllib2.Request(siteurl)
             req_get.add_header('User-Agent',
-                               'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36')
-            req_get.add_header('Content-Type', 'application/x-www-form-urlencoded')
+                               'Mozilla/5.0 (X11; Linux i686) '
+                               'AppleWebKit/537.36 (KHTML, like Gecko) '
+                               'Chrome/37.0.2062.120 Safari/537.36')
+            req_get.add_header('Content-Type',
+                               'application/x-www-form-urlencoded')
             req_get.add_header('Referer', 'http://v2ex.com')
             req_get.add_header('Accept-Encoding', 'gzip,deflate')
             resp = urllib2.urlopen(req_get)
@@ -293,7 +313,7 @@ def main():
             parserb.feed(req_con)
             parserb.close()
             coins = int(parserb.silver) * 100 + int(parserb.bons)
-            logger.info('Balance is ' + str(coins) + ' coins')
+            APPLOGGER.info('Balance is ' + str(coins) + ' coins')
 
         # for test
         # print req_con
@@ -304,10 +324,10 @@ def main():
         #     fileh.write(req_con)
         #     fileh.close()
         # except IOError as ex:
-        #     logger.error(ex)
+        #     APPLOGGER.error(ex)
 
     except urllib2.HTTPError as ex:
-        logger.error(ex)
+        APPLOGGER.error(ex)
         if ex.code == 403:
             # send mail
             pass
