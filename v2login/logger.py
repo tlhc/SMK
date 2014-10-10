@@ -22,4 +22,5 @@ def loggerinit():
 
 
 APPLOGGER = loggerinit()
+APPLOGGER.setLevel('INFO')
 
