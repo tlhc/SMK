@@ -14,6 +14,7 @@ from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
 
 import logger
+import mail
 
 
 def usage():
@@ -21,25 +22,6 @@ def usage():
 
     print 'usage: v2login.py -c /path/to/config_file'
     return
-
-
-# def loggerinit():
-#     """ init logger """
-# 
-#     fstr = '%(asctime)s %(levelname)-8s %(funcName)s %(lineno)s %(message)s'
-#     fomatter = logging.Formatter(fstr)
-#     _logger = logging.getLogger('v2loger')
-#     _logger.setLevel(logging.DEBUG)
-#     shandler = logging.StreamHandler()
-#     fhandler = logging.FileHandler('./v2login.log')
-#     shandler.setFormatter(fomatter)
-#     fhandler.setFormatter(fomatter)
-#     _logger.addHandler(shandler)
-#     _logger.addHandler(fhandler)
-#     return _logger
-# 
-# 
-# APPLOGGER = loggerinit()
 
 
 class AppException(Exception):
@@ -70,10 +52,17 @@ def parsecfg(filename):
             if username is not '' and password is not '':
                 cfg['username'] = username
                 cfg['password'] = password
-            fromaddr = config.get('v2', 'fromaddr')
-            toaddr = config.get('v2', 'toaddr')
-            cfg['fromaddr'] = fromaddr
-            cfg['toaddr'] = toaddr
+            _mail = config.get('v2', 'mail')
+            cfg['mail'] = int(_mail)
+            if int(_mail) == 1:
+                fromaddr = config.get('v2', 'fromaddr')
+                toaddr = config.get('v2', 'toaddr')
+                epass = config.get('v2', 'emailpass')
+                smtp = config.get('v2', 'smtp_server')
+                cfg['fromaddr'] = fromaddr
+                cfg['toaddr'] = toaddr
+                cfg['epass'] = epass
+                cfg['smtp'] = smtp
         except ConfigParser.Error as ex:
             fhandler.close()
             logger.APPLOGGER.error(ex)
@@ -209,7 +198,6 @@ def main():
     key_pass = 'password'
     onceval = ''
     req_con = ''
-    # email = 0
 
     try:
         optlist, _ = getopt.getopt(sys.argv[1:], 'hc:', ['help', 'config='])
@@ -232,6 +220,10 @@ def main():
     url = 'http://v2ex.com/signin'
 
     requests = Request()
+    if cfg['mail'] == 1:
+        email = mail.MailInfo(cfg['smtp'], cfg['fromaddr'],
+                              cfg['toaddr'], cfg['epass'], '')
+
     try:
         req_con = requests.get(url, '')
     except (urllib2.URLError, urllib2.HTTPError) as ex:
@@ -274,6 +266,7 @@ def main():
             parserb.close()
             coins = int(parserb.silver) * 100 + int(parserb.bons)
             logger.APPLOGGER.info('Balance is ' + str(coins) + ' coins')
+            return coins
 
         if gettag in req_con:
             _siteurl = siteurl + gettag
@@ -294,7 +287,12 @@ def main():
                         if req_con is '':
                             raise AppException('req_con is empty')
 
-                        getbalance()
+                        coins = getbalance()
+                        if cfg['mail'] == 1:
+                            emsg = 'ID: ' + cfg[key_user] + ' ' \
+                                    + 'total coins: ' + str(coins)
+                            email.setmsg(emsg)
+                            email.send()
 
                     except (urllib2.HTTPError, AppException) as ex:
                         logger.APPLOGGER.error(ex)
@@ -306,25 +304,21 @@ def main():
                 logger.APPLOGGER.error(ex)
         else:
             logger.APPLOGGER.info('already get coins')
-            getbalance()
+            coins = getbalance()
 
-        # for test
-        # print req_con
-        # try:
-        #     fileh = open('html.html', 'w')
-        #     fileh.close()
-        #     fileh = open('html.html', 'r+')
-        #     fileh.write(req_con)
-        #     fileh.close()
-        # except IOError as ex:
-        #     APPLOGGER.error(ex)
+            if cfg['mail'] == 1:
+                emsg = 'ID: ' + cfg[key_user] + ' ' \
+                       + 'total coins: ' + str(coins)
+                email.setmsg(emsg)
+                email.send()
 
     except urllib2.HTTPError as ex:
         logger.APPLOGGER.error(ex)
         if ex.code == 403:
-            # send mail
-            pass
-
+            if cfg['mail'] == 1:
+                emsg = 'ID: ' + cfg[key_user] + ' ' + 'v2ex bian~ '
+                email.setmsg(emsg)
+                email.send()
 
 if __name__ == '__main__':
     main()
