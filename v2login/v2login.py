@@ -255,35 +255,8 @@ def main():
 
         gettag = '/mission/daily'
         siteurl = 'http://v2ex.com'
-        if gettag in req_con:
-            _siteurl = siteurl + gettag
-            try:
-                req_con = requests.get(_siteurl, 'http://v2ex.com')
-                if req_con is '':
-                    raise AppException('req_con is empty')
-
-                parser = V2HTMLParserX()
-                parser.feed(req_con)
-                parser.close()
-                if parser.finlink is not '':
-                    print parser.finlink
-                    try:
-                        finlink = siteurl + parser.finlink
-
-                        req_con = requests.get(finlink, 'http://v2ex.com')
-                        if req_con is '':
-                            raise AppException('req_con is empty')
-
-                    except (urllib2.HTTPError, AppException) as ex:
-                        APPLOGGER.error(ex)
-
-                else:
-                    raise AppException('finlink is empty')
-
-            except (urllib2.HTTPError, AppException) as ex:
-                APPLOGGER.error(ex)
-        else:
-            APPLOGGER.info('already get coins')
+        def getbalance():
+            """ get getbalance """
             siteurl = 'http://v2ex.com/balance'
 
             req_con = requests.get(siteurl, 'http://v2ex.com')
@@ -295,6 +268,39 @@ def main():
             parserb.close()
             coins = int(parserb.silver) * 100 + int(parserb.bons)
             APPLOGGER.info('Balance is ' + str(coins) + ' coins')
+
+        if gettag in req_con:
+            _siteurl = siteurl + gettag
+            try:
+                req_con = requests.get(_siteurl, 'http://v2ex.com')
+                if req_con is '':
+                    raise AppException('req_con is empty')
+
+                parser = V2HTMLParserX()
+                parser.feed(req_con)
+                parser.close()
+                if parser.finlink is not '':
+                    # print parser.finlink
+                    try:
+                        finlink = siteurl + parser.finlink
+
+                        req_con = requests.get(finlink, 'http://v2ex.com')
+                        if req_con is '':
+                            raise AppException('req_con is empty')
+
+                        getbalance()
+
+                    except (urllib2.HTTPError, AppException) as ex:
+                        APPLOGGER.error(ex)
+
+                else:
+                    raise AppException('finlink is empty')
+
+            except (urllib2.HTTPError, AppException) as ex:
+                APPLOGGER.error(ex)
+        else:
+            APPLOGGER.info('already get coins')
+            getbalance()
 
         # for test
         # print req_con
