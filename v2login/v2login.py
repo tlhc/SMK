@@ -5,7 +5,6 @@
 import getopt
 import sys
 import os
-import logging
 import ConfigParser
 import urllib
 import urllib2
@@ -13,6 +12,8 @@ import cookielib
 import zlib
 from HTMLParser import HTMLParser
 from HTMLParser import HTMLParseError
+
+import logger
 
 
 def usage():
@@ -22,23 +23,23 @@ def usage():
     return
 
 
-def loggerinit():
-    """ init logger """
-
-    fstr = '%(asctime)s %(levelname)-8s %(funcName)s %(lineno)s %(message)s'
-    fomatter = logging.Formatter(fstr)
-    _logger = logging.getLogger('v2loger')
-    _logger.setLevel(logging.DEBUG)
-    shandler = logging.StreamHandler()
-    fhandler = logging.FileHandler('./v2login.log')
-    shandler.setFormatter(fomatter)
-    fhandler.setFormatter(fomatter)
-    _logger.addHandler(shandler)
-    _logger.addHandler(fhandler)
-    return _logger
-
-
-APPLOGGER = loggerinit()
+# def loggerinit():
+#     """ init logger """
+# 
+#     fstr = '%(asctime)s %(levelname)-8s %(funcName)s %(lineno)s %(message)s'
+#     fomatter = logging.Formatter(fstr)
+#     _logger = logging.getLogger('v2loger')
+#     _logger.setLevel(logging.DEBUG)
+#     shandler = logging.StreamHandler()
+#     fhandler = logging.FileHandler('./v2login.log')
+#     shandler.setFormatter(fomatter)
+#     fhandler.setFormatter(fomatter)
+#     _logger.addHandler(shandler)
+#     _logger.addHandler(fhandler)
+#     return _logger
+# 
+# 
+# APPLOGGER = loggerinit()
 
 
 class AppException(Exception):
@@ -55,10 +56,10 @@ def parsecfg(filename):
     """ parse config file and return config """
     cfg = {}
     if filename is '':
-        APPLOGGER.critical('filename is empty')
+        logger.APPLOGGER.critical('filename is empty')
         return
     if not os.path.isfile(filename):
-        APPLOGGER.critical('file invalid')
+        logger.APPLOGGER.critical('file invalid')
         return
     with open(filename, 'r') as fhandler:
         try:
@@ -69,9 +70,13 @@ def parsecfg(filename):
             if username is not '' and password is not '':
                 cfg['username'] = username
                 cfg['password'] = password
+            fromaddr = config.get('v2', 'fromaddr')
+            toaddr = config.get('v2', 'toaddr')
+            cfg['fromaddr'] = fromaddr
+            cfg['toaddr'] = toaddr
         except ConfigParser.Error as ex:
             fhandler.close()
-            APPLOGGER.error(ex)
+            logger.APPLOGGER.error(ex)
 
     fhandler.close()
     return cfg
@@ -179,7 +184,7 @@ class Request(object):
         req_con = resp.read()
         if gziped:
             req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
-            APPLOGGER.debug('gziped decompress')
+            logger.APPLOGGER.debug('gziped decompress')
         return req_con
 
     def post(self, url, refer, poststr):
@@ -192,18 +197,19 @@ class Request(object):
         # print gziped
         if gziped:
             req_con = zlib.decompress(req_con, 16 + zlib.MAX_WBITS)
-            APPLOGGER.debug('gziped decompress')
+            logger.APPLOGGER.debug('gziped decompress')
         return req_con
 
 
 def main():
     """ login to v2ex and get the coins """
-    APPLOGGER.info('init config file parse')
+    logger.APPLOGGER.info('init config file parse')
     cfg = {}
     key_user = 'username'
     key_pass = 'password'
     onceval = ''
     req_con = ''
+    # email = 0
 
     try:
         optlist, _ = getopt.getopt(sys.argv[1:], 'hc:', ['help', 'config='])
@@ -214,13 +220,13 @@ def main():
                 usage()
                 return
     except getopt.GetoptError as ex:
-        APPLOGGER.error(ex)
+        logger.APPLOGGER.error(ex)
 
     if key_user not in cfg.keys():
-        APPLOGGER.error('username not exists')
+        logger.APPLOGGER.error('username not exists')
         return
     if key_pass not in cfg.keys():
-        APPLOGGER.error('password not exists')
+        logger.APPLOGGER.error('password not exists')
         return
 
     url = 'http://v2ex.com/signin'
@@ -229,7 +235,7 @@ def main():
     try:
         req_con = requests.get(url, '')
     except (urllib2.URLError, urllib2.HTTPError) as ex:
-        APPLOGGER.error(ex)
+        logger.APPLOGGER.error(ex)
 
     try:
         parser = V2HTMLParser()
@@ -239,7 +245,7 @@ def main():
         if onceval is '':
             raise AppException('onceval is empty')
     except (HTMLParseError, AppException) as ex:
-        APPLOGGER.error(ex)
+        logger.APPLOGGER.error(ex)
 
     try:
         postdata = {}
@@ -267,7 +273,7 @@ def main():
             parserb.feed(req_con)
             parserb.close()
             coins = int(parserb.silver) * 100 + int(parserb.bons)
-            APPLOGGER.info('Balance is ' + str(coins) + ' coins')
+            logger.APPLOGGER.info('Balance is ' + str(coins) + ' coins')
 
         if gettag in req_con:
             _siteurl = siteurl + gettag
@@ -291,15 +297,15 @@ def main():
                         getbalance()
 
                     except (urllib2.HTTPError, AppException) as ex:
-                        APPLOGGER.error(ex)
+                        logger.APPLOGGER.error(ex)
 
                 else:
                     raise AppException('finlink is empty')
 
             except (urllib2.HTTPError, AppException) as ex:
-                APPLOGGER.error(ex)
+                logger.APPLOGGER.error(ex)
         else:
-            APPLOGGER.info('already get coins')
+            logger.APPLOGGER.info('already get coins')
             getbalance()
 
         # for test
@@ -314,7 +320,7 @@ def main():
         #     APPLOGGER.error(ex)
 
     except urllib2.HTTPError as ex:
-        APPLOGGER.error(ex)
+        logger.APPLOGGER.error(ex)
         if ex.code == 403:
             # send mail
             pass
