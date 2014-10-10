@@ -10,11 +10,11 @@ import urllib
 import urllib2
 import cookielib
 import zlib
-from HTMLParser import HTMLParser
-from HTMLParser import HTMLParseError
 
 import logger
 import mail
+import v2parser
+from HTMLParser import HTMLParseError
 
 
 def usage():
@@ -69,85 +69,6 @@ def parsecfg(filename):
 
     fhandler.close()
     return cfg
-
-
-class V2HTMLParser(HTMLParser):
-    """ html parser """
-    def __init__(self):
-        self.onceval = ''
-        HTMLParser.__init__(self)
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'input':
-            for key, val in attrs:
-                if key == 'name' and val == 'once':
-                    # print attrs
-                    for _key, _val in attrs:
-                        if _key == 'value':
-                            self.onceval = _val
-                            break
-
-    def handle_endtag(self, tag):
-        if tag == 'input':
-            pass
-
-
-class V2HTMLParserX(HTMLParser):
-    """ HTMLParser for get coins """
-    def __init__(self):
-        self.finlink = ''
-        HTMLParser.__init__(self)
-
-    def handle_starttag(self, tag, attrs):
-        gettag = '/mission/daily'
-        if tag == 'input':
-            # print attrs
-            for _, val in attrs:
-                if gettag in val:
-                    spos = val.index(gettag)
-                    epos = val.index(';')
-                    if epos > spos:
-                        self.finlink = val[spos:epos].strip("'")
-
-    def handle_endtag(self, tag):
-        pass
-
-
-class V2HTMLParserB(HTMLParser):
-    """ HTMLParser for get balance"""
-    def __init__(self):
-        self.flagb = 0
-        self.flags = 0
-        self.bons = 0
-        self.silver = 0
-        HTMLParser.__init__(self)
-
-    def handle_starttag(self, tag, attrs):
-        if tag == 'img':
-            for _, val in attrs:
-                if 'silver' in val:
-                    self.flagb = 1
-
-        if tag == 'a':
-            for _, val in attrs:
-                if 'balance_area' in val:
-                    self.flags = 1
-
-    def handle_endtag(self, tag):
-        pass
-
-    def handle_data(self, data):
-
-        if self.flagb == 1:
-            # print data.strip()
-            self.bons = data.strip()
-            self.flagb = 0
-
-        if self.flags == 1:
-            # print data.strip()
-            self.silver = data.strip()
-            self.flags = 0
-
 
 class Request(object):
     """ urllib2 Request """
@@ -230,7 +151,7 @@ def main():
         logger.APPLOGGER.error(ex)
 
     try:
-        parser = V2HTMLParser()
+        parser = v2parser.V2HTMLParser()
         parser.feed(req_con)
         onceval = parser.onceval
         parser.close()
@@ -261,9 +182,13 @@ def main():
             if req_con is '':
                 raise AppException('req_con is empty')
 
-            parserb = V2HTMLParserB()
-            parserb.feed(req_con)
-            parserb.close()
+            try:
+                parserb = v2parser.V2HTMLParserB()
+                parserb.feed(req_con)
+                parserb.close()
+            except HTMLParseError as ex:
+                logger.APPLOGGER.error(ex)
+
             coins = int(parserb.silver) * 100 + int(parserb.bons)
             logger.APPLOGGER.info('Balance is ' + str(coins) + ' coins')
             return coins
@@ -275,13 +200,13 @@ def main():
                 if req_con is '':
                     raise AppException('req_con is empty')
 
-                parser = V2HTMLParserX()
-                parser.feed(req_con)
-                parser.close()
-                if parser.finlink is not '':
+                parserx = v2parser.V2HTMLParserX()
+                parserx.feed(req_con)
+                parserx.close()
+                if parserx.finlink is not '':
                     # print parser.finlink
                     try:
-                        finlink = siteurl + parser.finlink
+                        finlink = siteurl + parserx.finlink
 
                         req_con = requests.get(finlink, 'http://v2ex.com')
                         if req_con is '':
@@ -300,7 +225,7 @@ def main():
                 else:
                     raise AppException('finlink is empty')
 
-            except (urllib2.HTTPError, AppException) as ex:
+            except (urllib2.HTTPError, AppException, HTMLParseError) as ex:
                 logger.APPLOGGER.error(ex)
         else:
             logger.APPLOGGER.info('already get coins')
