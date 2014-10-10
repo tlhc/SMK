@@ -1,0 +1,15 @@
+v2ex login and get mission daily coins
+
+usage:
+    python v2login.py -c v2.cfg
+
+v2.cfg:
+[v2]
+username = yourname
+password = yourpass
+toaddr = to@email.com
+fromaddr = from@email.com
+emailpass = emailpass
+smtp_server = smtp.email.com
+mail = 1
+
