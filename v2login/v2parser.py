@@ -80,3 +80,15 @@ class V2HTMLParserB(HTMLParser):
             self.silver = data.strip()
             self.flags = 0
 
+class V2HTMLParserL(HTMLParser):
+    """ check login status """
+    def __init__(self):
+        self.wstatus = 0
+        HTMLParser.__init__(self)
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'div':
+            for _, val in attrs:
+                if 'problem' in val:
+                    self.wstatus = 1
+                    return

@@ -52,9 +52,9 @@ def parsecfg(filename):
             if username is not '' and password is not '':
                 cfg['username'] = username
                 cfg['password'] = password
-            _mail = config.get('v2', 'mail')
-            cfg['mail'] = int(_mail)
-            if int(_mail) == 1:
+            _mail = config.getint('v2', 'mail')
+            cfg['mail'] = _mail
+            if _mail == 1:
                 fromaddr = config.get('v2', 'fromaddr')
                 toaddr = config.get('v2', 'toaddr')
                 epass = config.get('v2', 'emailpass')
@@ -192,6 +192,14 @@ def main():
             coins = int(parserb.silver) * 100 + int(parserb.bons)
             logger.APPLOGGER.info('Balance is ' + str(coins) + ' coins')
             return coins
+
+        parserl = v2parser.V2HTMLParserL()
+        parserl.feed(req_con)
+        parserl.close()
+
+        if parserl.wstatus == 1:
+            logger.APPLOGGER.error('logging not success')
+            return
 
         if gettag in req_con:
             _siteurl = siteurl + gettag
