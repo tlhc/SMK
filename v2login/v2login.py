@@ -240,8 +240,8 @@ def main():
             coins = getbalance()
 
             if cfg['mail'] == 1:
-                emsg = 'ID: ' + cfg[key_user] + ' ' \
-                       + 'total coins: ' + str(coins)
+                emsg = 'already get coins ' + 'ID: ' + cfg[key_user] + ' ' \
+                        + 'total coins: ' + str(coins)
                 email.setmsg(emsg)
                 email.send()
 
