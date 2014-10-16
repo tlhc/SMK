@@ -31,7 +31,7 @@ class AppException(Exception):
         Exception.__init__(self)
 
     def __str__(self):
-        return self.repr(self.value)
+        return repr(self.value)
 
 
 def parsecfg(filename):
