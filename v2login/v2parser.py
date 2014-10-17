@@ -18,6 +18,12 @@ class V2HTMLParser(HTMLParser):
                         if _key == 'value':
                             self.onceval = _val
                             break
+            # tmplist = [finval for key, val in attrs
+            #                     if key == 'name' and val == 'once'
+            #                   for _key, finval in attrs
+            #                     if _key == 'value']
+            # if len(tmplist) == 1:
+            #    self.onceval = str(tmplist)
 
     def handle_endtag(self, tag):
         if tag == 'input':
