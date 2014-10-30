@@ -1,0 +1,7 @@
+scenario:
+   if you have a source code package that contains many rar files:
+   A.rar, B.rar, C.rar ....
+   when you extract them , then you will have some dirs:
+   dirA, dirB, dirC .....
+   then just :
+   copydir.py -s ./ -d /path/to/dest
