@@ -27,6 +27,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <signal.h>
+#include <fstream>
 
 #define UNUSED(x) (void)(x)
 
@@ -62,37 +63,16 @@ void *thr(void *args) {
 
 void init_server_list(std::vector<std::string> &vec) {
     vec.clear();
-    vec.push_back("us01.xzvpn.com");
-    vec.push_back("us02.xzvpn.com");
-    vec.push_back("us03.xzvpn.com");
-    vec.push_back("us04.xzvpn.com");
-    vec.push_back("us05.xzvpn.com");
-    vec.push_back("us06.xzvpn.com");
-    vec.push_back("us07.xzvpn.com");
-    vec.push_back("us08.xzvpn.com");
-    vec.push_back("us09.xzvpn.com");
-    vec.push_back("us10.xzvpn.com");
-    vec.push_back("us11.xzvpn.com");
-    vec.push_back("us12.xzvpn.com");
-    vec.push_back("us13.xzvpn.com");
-    vec.push_back("us14.xzvpn.com");
-    vec.push_back("us15.xzvpn.com");
-    vec.push_back("us16.xzvpn.com");
-    vec.push_back("us17.xzvpn.com");
-    vec.push_back("us18.xzvpn.com");
-    vec.push_back("jp01.xzvpn.com");
-    vec.push_back("jp02.xzvpn.com");
-    vec.push_back("jp03.xzvpn.com");
-    vec.push_back("jp04.xzvpn.com");
-    vec.push_back("de01.xzvpn.com");
-    vec.push_back("uk01.xzvpn.com");
-    vec.push_back("uk02.xzvpn.com");
-    vec.push_back("hk01.xzvpn.com");
-    vec.push_back("hk02.xzvpn.com");
-    vec.push_back("hk03.xzvpn.com");
-    vec.push_back("tw01.xzvpn.com");
-    vec.push_back("tw02.xzvpn.com");
-    vec.push_back("cn01.xzvpn.com");
+    std::string filename = "./vpnlist.txt";
+    std::ifstream instream(filename.c_str());
+    if(!instream.good()) {
+        std::cout << "vpnlist.txt is not exists" << std::endl;
+        exit(1);
+    }
+    std::string line;
+    while(std::getline(instream, line)) {
+        vec.push_back(line);
+    }
     return;
 }
 
