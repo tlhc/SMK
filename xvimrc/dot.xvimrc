@@ -1,0 +1,18 @@
+set incsearch
+" Case-insensitive searching.
+"
+set ignorecase
+"
+" But case-sensitive if expression contains a capital letter.
+set smartcase
+"
+" Default to global substitutions on lines
+set gdefault
+"
+" Use the system pasteboard
+set pasteboard
+
+cmap A pc 
+cmap B make
+cmap R run
+cmap E ni
