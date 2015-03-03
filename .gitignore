@@ -1,5 +1,5 @@
 # for python
 .ropeproject
-v2login.log
+*.log
 html.html
 *.pyc
