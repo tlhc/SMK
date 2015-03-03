@@ -27,15 +27,13 @@ class MailCfgReader(object):
 
     def parser(self):
         """ parse config """
-        ava_configlist = []
-
         def parse_single(confparser, path):
             confobj = ConfigObject()
             confobj.confpath = path
             try:
                 if confparser.has_option(path, 'toaddr'):
                     confobj.toaddresslist = [item.strip() \
-                            for item in confparser.get(path, 'toaddr').split(',')]
+                        for item in confparser.get(path, 'toaddr').split(',')]
                 else:
                     raise AppExp('toaddr read err')
                 if confparser.has_option(path, 'fromaddr'):
@@ -54,6 +52,7 @@ class MailCfgReader(object):
                 APPLOGGER.error(ex)
             return confobj
 
+        ava_configlist = []
         try:
             if exists(self.__path) and isfile(self.__path):
                 with open(self.__path) as fhandler:
@@ -96,10 +95,10 @@ if __name__ == '__main__':
     """ test function """
     cfgparser = MailCfgReader('./mail.cfg')
     allcfg = cfgparser.parser()
-    for item in allcfg:
-        print item.confpath
-        print item.emailpwd
-        print item.fromaddress
-        print item.smtpserver
-        print item.toaddresslist
+    for _item in allcfg:
+        print _item.confpath
+        print _item.emailpwd
+        print _item.fromaddress
+        print _item.smtpserver
+        print _item.toaddresslist
 
