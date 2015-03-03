@@ -15,9 +15,7 @@ def send_signal_section(item):
         """ send one cfg file content """
         email = MailInfo(server, fromaddr, toaddr, passwd, msg)
         email.send()
-
     msg = open(item.confpath, 'r').read()
-
     [send_file_content(item.smtpserver, \
             item.fromaddress, toaddr, item.emailpwd, msg) \
             for toaddr in item.toaddresslist]
