@@ -15,7 +15,7 @@ smtp_server = smtp.mail.serveraddress ;smtp server address
 you can have many sections in config file:
 
 [/path/to/config_file]
-toaddr = to@gmail.com, to1@gmail.com  ;mail to list
+toaddr = to@gmail.com                 ;list can contain just one address
 fromaddr = from@mail.com              ;from email account
 emailpass = password                  ;from email account password
 smtp_server = smtp.mail.serveraddress ;smtp server address
