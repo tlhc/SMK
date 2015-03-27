@@ -54,32 +54,23 @@ class V2HTMLParserX(HTMLParser):
 class V2HTMLParserB(HTMLParser):
     """ HTMLParser for get balance"""
     def __init__(self):
-        self.flagb = 0
-        self.flags = 0
-        self.flagg = 0
-        self.bons = 0
-        self.silver = 0
-        self.gold = 0
-        self.isg = 0
-        self.iss = 0
+        self.flagb = self.flags = self.flagg = 0
+        self.bons = self.silver = self.gold = 0
+        self.isg = self.iss = 0
         HTMLParser.__init__(self)
 
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             for _, val in attrs:
                 if 'balance_area' in val:
-                    self.flagg = 1
-                    self.flags = 1
-                    self.flagb = 1
+                    self.flagg = self.flags = self.flagb = 1
 
         if tag == 'img':
             for _, val in attrs:
                 if 'gold' in val:
-                    self.flags = 1
-                    self.isg = 1
+                    self.flags = self.isg = 1
                 if 'silver' in val:
-                    self.flagb = 1
-                    self.iss = 1
+                    self.flagb = self.iss = 1
 
     def handle_endtag(self, tag):
         if tag == 'html':
