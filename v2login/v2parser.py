@@ -56,35 +56,50 @@ class V2HTMLParserB(HTMLParser):
     def __init__(self):
         self.flagb = 0
         self.flags = 0
+        self.flagg = 0
         self.bons = 0
         self.silver = 0
+        self.gold = 0
+        self.isg = 0
+        self.iss = 0
         HTMLParser.__init__(self)
 
     def handle_starttag(self, tag, attrs):
-        if tag == 'img':
-            for _, val in attrs:
-                if 'silver' in val:
-                    self.flagb = 1
-
         if tag == 'a':
             for _, val in attrs:
                 if 'balance_area' in val:
+                    self.flagg = 1
                     self.flags = 1
+                    self.flagb = 1
+
+        if tag == 'img':
+            for _, val in attrs:
+                if 'gold' in val:
+                    self.flags = 1
+                    self.isg = 1
+                if 'silver' in val:
+                    self.flagb = 1
+                    self.iss = 1
 
     def handle_endtag(self, tag):
-        pass
+        if tag == 'html':
+            if self.isg == 0:
+                self.gold = 0
+            if self.iss == 0:
+                self.silver = 0
 
     def handle_data(self, data):
-
-        if self.flagb == 1:
-            # print data.strip()
-            self.bons = data.strip()
-            self.flagb = 0
+        if self.flagg == 1:
+            self.gold = data.strip()
+            self.flagg = 0
 
         if self.flags == 1:
-            # print data.strip()
             self.silver = data.strip()
             self.flags = 0
+
+        if self.flagb == 1:
+            self.bons = data.strip()
+            self.flagb = 0
 
 class V2HTMLParserL(HTMLParser):
     """ check login status """

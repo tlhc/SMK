@@ -138,7 +138,7 @@ def main():
         logger.APPLOGGER.error('password not exists')
         return
 
-    url = 'http://v2ex.com/signin'
+    url = 'https://v2ex.com/signin'
 
     requests = Request()
     if cfg['mail'] == 1:
@@ -173,12 +173,12 @@ def main():
             raise AppException('req_con is empty')
 
         gettag = '/mission/daily'
-        siteurl = 'http://v2ex.com'
+        siteurl = 'https://v2ex.com'
         def getbalance():
             """ get getbalance """
-            siteurl = 'http://v2ex.com/balance'
+            siteurl = 'https://v2ex.com/balance'
 
-            req_con = requests.get(siteurl, 'http://v2ex.com')
+            req_con = requests.get(siteurl, 'https://v2ex.com')
             if req_con is '':
                 raise AppException('req_con is empty')
 
@@ -189,7 +189,8 @@ def main():
             except HTMLParseError as ex:
                 logger.APPLOGGER.error(ex)
 
-            coins = int(parserb.silver) * 100 + int(parserb.bons)
+            coins = int(parserb.gold) * 10000 + int(parserb.silver) * 100 \
+                    + int(parserb.bons)
             logger.APPLOGGER.info('Balance is ' + str(coins) + ' coins')
             return coins
 
@@ -204,7 +205,7 @@ def main():
         if gettag in req_con:
             _siteurl = siteurl + gettag
             try:
-                req_con = requests.get(_siteurl, 'http://v2ex.com')
+                req_con = requests.get(_siteurl, 'https://v2ex.com')
                 if req_con is '':
                     raise AppException('req_con is empty')
 
@@ -216,7 +217,7 @@ def main():
                     try:
                         finlink = siteurl + parserx.finlink
 
-                        req_con = requests.get(finlink, 'http://v2ex.com')
+                        req_con = requests.get(finlink, 'https://v2ex.com')
                         if req_con is '':
                             raise AppException('req_con is empty')
 
